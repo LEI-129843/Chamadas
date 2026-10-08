@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Chamadas">
+<title>Chamadas</title>
+<style>
+:root{--bg:#f2f2f7;--card:#fff;--text:#1c1c1e;--muted:#8e8e93;--line:#e5e5ea;--accent:#007aff;--green:#34c759;--red:#ff3b30}
+@media (prefers-color-scheme:dark){:root{--bg:#000;--card:#1c1c1e;--text:#f2f2f7;--muted:#8e8e93;--line:#2c2c2e;--accent:#0a84ff;--green:#30d158;--red:#ff453a}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg)}
+body{margin:0;color:var(--text);font:18px -apple-system,system-ui,sans-serif;padding:env(safe-area-inset-top) 0 calc(110px + env(safe-area-inset-bottom))}
+header{padding:16px 16px 4px}
+h1{margin:0;font-size:38px}
+.sub{color:var(--muted);font-size:17px;margin-top:2px}
+.progress{height:6px;background:var(--line);border-radius:3px;margin-top:10px;overflow:hidden}
+.progress div{height:100%;background:var(--green);transition:width .3s}
+.search{display:block;margin:10px 16px;width:calc(100% - 32px);padding:13px 14px;border:none;border-radius:12px;background:var(--card);color:var(--text);font-size:18px}
+.group{margin:22px 16px 8px;font-size:16px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;display:flex;justify-content:space-between}
+.list{margin:0 12px;background:var(--card);border-radius:16px;overflow:hidden}
+.row{display:flex;align-items:center;gap:10px;padding:14px 12px;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:none}
+.check{width:38px;height:38px;border-radius:50%;border:2.5px solid var(--muted);flex:none;display:grid;place-items:center;background:none;color:#fff;font-size:22px;font-weight:700;padding:0}
+.check.on{background:var(--green);border-color:var(--green)}
+.info{flex:1;min-width:0}
+.name{font-size:21px;font-weight:700;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta{font-size:16px;margin-top:1px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.time{font-variant-numeric:tabular-nums;font-weight:700;font-size:17px}
+.time small{display:block;font-weight:400;font-size:13px;color:var(--muted)}
+.row{border-left:6px solid transparent}
+.row.now{border-left-color:var(--green)}
+.row.late{border-left-color:var(--red)}
+.when{font-size:15px;font-weight:600;color:var(--muted);margin-top:3px}
+.now .time,.now .when{color:var(--green)}
+.late .time,.late .when{color:var(--red)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.stat{border-radius:20px;padding:18px 12px 16px;text-align:center;background:var(--card);border:3px solid var(--line)}
+.stat b{display:block;font-size:64px;line-height:1;font-weight:800;font-variant-numeric:tabular-nums}
+.stat span{display:block;margin-top:8px;font-size:17px;font-weight:700;text-transform:uppercase;letter-spacing:.02em}
+.stat.todo span{color:var(--muted)}
+.stat.go{border-color:var(--green)}
+.stat.go b,.stat.go span{color:var(--green)}
+.stat.go.live{background:var(--green)}
+.stat.go.live b,.stat.go.live span{color:#fff}
+.addbig{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:14px;padding:16px;border:none;border-radius:16px;background:var(--accent);color:#fff;font-size:20px;font-weight:700}
+.addbig span{font-size:30px;line-height:1;font-weight:500}
+.pick{display:block;margin:0 16px 16px;width:calc(100% - 32px);padding:16px;border:none;border-radius:14px;background:var(--accent);color:#fff;font-size:19px;font-weight:700}
+.alldone{margin-top:12px;text-align:center;font-size:20px;font-weight:700;color:var(--green)}
+.slot-top span{color:var(--muted)}
+.slot-actions{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+.rm{border:none;background:none;color:var(--red);font-size:17px}
+.done .name,.done .time{color:var(--muted);text-decoration:line-through}
+.skip .info,.skip .time{opacity:.45}
+.skip .name{text-decoration:line-through}
+.x{width:46px;height:46px;border-radius:50%;border:none;background:var(--line);color:var(--muted);font-size:20px;font-weight:700;flex:none;padding:0}
+.x.on{background:var(--red);color:#fff}
+.bell{border:none;background:var(--bg);color:var(--accent);font-size:16px;border-radius:10px;padding:10px 12px}
+.bell.on{background:var(--accent);color:#fff}
+.call{width:60px;height:60px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;text-decoration:none;flex:none}
+.call svg{width:28px;height:28px;fill:#fff}
+.empty{text-align:center;color:var(--muted);font-size:19px;padding:50px 24px;line-height:1.5}
+.tools{display:flex;gap:8px;margin:4px 16px 0}
+.tools button{flex:1;padding:13px;border:none;border-radius:12px;background:var(--card);color:var(--accent);font-size:16px}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav button{flex:1;padding:12px 0 10px;border:none;background:none;color:var(--muted);font-size:15px;font-weight:600}
+nav button.on{color:var(--accent)}
+nav span{display:block;font-size:28px;line-height:1.1}
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;z-index:10}
+.sheet-bg.open{display:block}
+.sheet{position:absolute;left:0;right:0;bottom:0;top:calc(30px + env(safe-area-inset-top));background:var(--bg);border-radius:14px 14px 0 0;overflow:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(40px + env(safe-area-inset-bottom))}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;padding:14px 12px;position:sticky;top:0;background:var(--bg);z-index:2}
+.sheet-head b{font-size:20px}
+.link{border:none;background:none;color:var(--accent);font-size:19px;padding:4px 6px}
+.link.bold{font-weight:600}
+.form{margin:0 16px 18px;background:var(--card);border-radius:12px;overflow:hidden}
+.form label{display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid var(--line);min-height:56px}
+.form label:last-child{border-bottom:none}
+.form label span{width:105px;flex:none;color:var(--muted);font-size:17px}
+.form input,.form textarea{flex:1;border:none;background:none;color:var(--text);font:19px -apple-system,system-ui,sans-serif;padding:14px 0;min-width:0;outline:none}
+.form textarea{resize:none;height:70px}
+.label{margin:0 16px 8px;font-size:16px;font-weight:600;color:var(--muted);text-transform:uppercase}
+.slot{padding:12px;border-bottom:1px solid var(--line)}
+.slot-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.slot-top input{font-size:20px;font-weight:600;border:none;background:var(--bg);color:var(--text);border-radius:8px;padding:6px 10px}
+.slot-top button{margin-left:auto;border:none;background:none;color:var(--red);font-size:15px}
+.days{display:flex;gap:5px}
+.days button{flex:1;padding:12px 0;border-radius:10px;border:none;background:var(--bg);color:var(--text);font-size:15px;font-weight:600}
+.days button.on{background:var(--accent);color:#fff}
+.add-slot{display:block;width:100%;padding:16px;border:none;background:none;color:var(--accent);font-size:18px;text-align:left}
+.danger{display:block;margin:0 16px;width:calc(100% - 32px);padding:16px;border:none;border-radius:12px;background:var(--card);color:var(--red);font-size:18px}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<nav>
+  <button id="tab-hoje" class="on"><span>☑︎</span>Hoje</button>
+  <button id="tab-pessoas"><span>👥</span>Pessoas</button>
+</nav>
+<div class="sheet-bg" id="sheetBg"><div class="sheet" id="sheet"></div></div>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+<input type="file" id="vcfFile" accept=".vcf,text/vcard,text/x-vcard,text/directory" hidden>
+
+<script>
+const KEY = 'chamadas.v1';
+const DAYS = [[1,'Seg'],[2,'Ter'],[3,'Qua'],[4,'Qui'],[5,'Sex'],[6,'Sáb'],[0,'Dom']];
+const PHONE_ICON = '<svg viewBox="0 0 24 24"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg>';
+
+let state = { people: [], done: {} };
+let tab = 'hoje';
+let query = '';
+
+function load() {
+  try { const s = localStorage.getItem(KEY); if (s) state = JSON.parse(s); } catch (e) {}
+  state.people = state.people || [];
+  state.done = state.done || {};
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+function todayKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function nowHM() {
+  const d = new Date();
+  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+function prune() {
+  const k = todayKey();
+  for (const d in state.done) if (d !== k) delete state.done[d];
+}
+function esc(s) {
+  return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function addMin(hm, m) {
+  const [h, mi] = hm.split(':').map(Number);
+  const t = Math.min(h * 60 + mi + m, 23 * 60 + 59);
+  return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0');
+}
+function endOf(h) { return h.ate && h.ate > h.hora ? h.ate : addMin(h.hora, 60); }
+function telHref(p) { return 'tel:' + String(p || '').replace(/[^\d+]/g, ''); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+function daysLabel(ds) {
+  const s = [...ds].sort().join(',');
+  if (ds.length === 7) return 'Todos os dias';
+  if (s === '1,2,3,4,5') return 'Dias úteis';
+  if (s === '0,6') return 'Fins de semana';
+  return DAYS.filter(([n]) => ds.includes(n)).map(([, l]) => l).join(', ');
+}
+function matches(p) {
+  if (!query) return true;
+  const q = query.toLowerCase();
+  return [p.nome, p.empresa, p.local, p.telefone].some(v => String(v || '').toLowerCase().includes(q));
+}
+
+function todayItems() {
+  const dow = new Date().getDay();
+  const done = state.done[todayKey()] || {};
+  const items = [];
+  for (const p of state.people) {
+    for (const h of p.horarios || []) {
+      if (h.hora && h.dias.includes(dow)) {
+        const id = p.id + '|' + h.hora;
+        const st = done[id] === 'skip' ? 'skip' : done[id] ? 'done' : '';
+        items.push({ p, hora: h.hora, fim: endOf(h), id, st, done: !!st });
+      }
+    }
+  }
+  return items;
+}
+
+function renderHoje() {
+  const all = todayItems();
+  const doneCount = all.filter(i => i.done).length;
+  const madeCount = all.filter(i => i.st === 'done').length;
+  const skipCount = all.filter(i => i.st === 'skip').length;
+  const items = all.filter(i => matches(i.p));
+  const now = nowHM();
+  const date = new Date().toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long' });
+  const left = all.length - doneCount;
+  const nowCount = all.filter(i => !i.done && now >= i.hora && now <= i.fim).length;
+  const lateCount = all.filter(i => !i.done && now > i.fim).length;
+  let html = `<header><h1>Hoje</h1><div class="sub">${esc(date)}</div>
+    <div class="stats">
+      <div class="stat todo"><b>${left}</b><span>Por realizar</span></div>
+      <div class="stat go ${nowCount ? 'live' : ''}"><b>${nowCount}</b><span>Hora de ligar</span></div>
+    </div>
+    ${all.length && !left ? '<div class="alldone">Tudo feito por hoje 🎉</div>' : ''}</header>
+    <input class="search" type="search" placeholder="Procurar nome, empresa, local…" value="${esc(query)}" id="q">`;
+
+  if (!all.length) {
+    html += `<div class="empty">${state.people.length ? 'Não há chamadas marcadas para hoje.' : 'Ainda não tens ninguém.<br>Vai a <b>Pessoas</b> e toca em <b>Adicionar contacto</b>.'}</div>`;
+    return html;
+  }
+  const groups = [['Manhã', i => i.hora < '12:00'], ['Tarde', i => i.hora >= '12:00' && i.hora < '18:00'], ['Noite', i => i.hora >= '18:00']];
+  for (const [name, test] of groups) {
+    const g = items.filter(test).sort((a, b) => (a.done - b.done) || a.hora.localeCompare(b.hora) || a.p.nome.localeCompare(b.p.nome));
+    if (!g.length) continue;
+    const gd = g.filter(i => i.done).length;
+    html += `<div class="group"><span>${name}</span><span>${gd}/${g.length}</span></div><div class="list">`;
+    for (const i of g) {
+      let cls = '', when = '';
+      if (i.st === 'done') when = 'Feita';
+      else if (i.st === 'skip') when = 'Não ligar hoje';
+      else if (now < i.hora) when = 'Ainda não começou';
+      else if (now <= i.fim) { cls = 'now'; when = 'Hora de ligar'; }
+      else { cls = 'late'; when = 'Fora do horário'; }
+      const meta = [i.p.empresa, i.p.local].filter(Boolean).join(' · ') || i.p.telefone;
+      html += `<div class="row ${i.st} ${cls}">
+        <button class="check ${i.st === 'done' ? 'on' : ''}" data-toggle="${esc(i.id)}" aria-label="Marcar como feita">${i.st === 'done' ? '✓' : ''}</button>
+        <div class="info" data-edit="${esc(i.p.id)}"><div class="time">${esc(i.hora)} – ${esc(i.fim)}</div><div class="name">${esc(i.p.nome)}</div><div class="meta">${esc(meta)}</div><div class="when">${esc(when)}</div></div>
+        <button class="x ${i.st === 'skip' ? 'on' : ''}" data-skip="${esc(i.id)}" aria-label="Não ligar hoje">✕</button>
+        <a class="call" href="${esc(telHref(i.p.telefone))}" aria-label="Ligar">${PHONE_ICON}</a>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  if (!items.length) html += `<div class="empty">Nenhum resultado.</div>`;
+  return html;
+}
+
+function renderPessoas() {
+  const list = state.people.filter(matches).sort((a, b) => a.nome.localeCompare(b.nome, 'pt'));
+  let html = `<header><h1>Pessoas</h1><div class="sub">${state.people.length} no total</div>
+    <button class="addbig" id="addBtn"><span>+</span> Adicionar contacto</button></header>
+    <input class="search" type="search" placeholder="Procurar…" value="${esc(query)}" id="q">
+    <div class="tools"><button id="exportBtn">Exportar cópia</button><button id="importBtn">Importar cópia</button></div>
+    <div class="tools" style="margin-top:8px"><button id="bellAll">🔔 Criar lembretes para todos</button></div>`;
+  if (!list.length) {
+    html += `<div class="empty">${state.people.length ? 'Nenhum resultado.' : 'Toca em <b>Adicionar contacto</b> para começar.'}</div>`;
+    return html;
+  }
+  html += `<div class="group"><span>Contactos</span></div><div class="list">`;
+  for (const p of list) {
+    const hs = (p.horarios || []).filter(h => h.hora);
+    const sched = hs.length ? hs.map(h => h.hora + '–' + endOf(h)).sort().join(', ') + ' · ' + daysLabel([...new Set(hs.flatMap(h => h.dias))]) + (hs.some(h => h.lembrete) ? ' · 🔔' : '') : 'Sem horário';
+    html += `<div class="row">
+      <div class="info" data-edit="${esc(p.id)}"><div class="name">${esc(p.nome)}</div>
+      <div class="meta">${esc([p.empresa, p.local].filter(Boolean).join(' · ') || p.telefone)}</div>
+      <div class="meta">${esc(sched)}</div></div>
+      <a class="call" href="${esc(telHref(p.telefone))}" aria-label="Ligar">${PHONE_ICON}</a></div>`;
+  }
+  return html + `</div>`;
+}
+
+function render() {
+  const app = document.getElementById('app');
+  app.innerHTML = tab === 'hoje' ? renderHoje() : renderPessoas();
+  document.getElementById('tab-hoje').classList.toggle('on', tab === 'hoje');
+  document.getElementById('tab-pessoas').classList.toggle('on', tab === 'pessoas');
+  const q = document.getElementById('q');
+  if (q) q.addEventListener('input', e => {
+    query = e.target.value;
+    const pos = e.target.selectionStart;
+    render();
+    const nq = document.getElementById('q'); nq.focus(); nq.setSelectionRange(pos, pos);
+  });
+  const ex = document.getElementById('exportBtn'); if (ex) ex.onclick = exportData;
+  const im = document.getElementById('importBtn'); if (im) im.onclick = () => document.getElementById('importFile').click();
+  const ba = document.getElementById('bellAll'); if (ba) ba.onclick = remindAll;
+  const ad = document.getElementById('addBtn'); if (ad) ad.onclick = () => openSheet(null);
+}
+
+document.getElementById('app').addEventListener('click', e => {
+  const t = e.target.closest('[data-toggle],[data-skip]');
+  if (t) {
+    const k = todayKey(), id = t.dataset.toggle || t.dataset.skip;
+    const val = t.dataset.toggle ? 'done' : 'skip';
+    state.done[k] = state.done[k] || {};
+    const cur = state.done[k][id] === true ? 'done' : state.done[k][id];
+    if (cur === val) delete state.done[k][id]; else state.done[k][id] = val;
+    save(); render(); return;
+  }
+  const ed = e.target.closest('[data-edit]');
+  if (ed) openSheet(state.people.find(p => p.id === ed.dataset.edit));
+});
+
+/* ---------- Formulário ---------- */
+let draft = null;
+
+function openSheet(person) {
+  draft = person ? JSON.parse(JSON.stringify(person))
+    : { id: null, nome: '', telefone: '', empresa: '', local: '', notas: '', horarios: [{ hora: '09:00', ate: '10:00', dias: [1, 2, 3, 4, 5] }] };
+  renderSheet();
+  document.getElementById('sheetBg').classList.add('open');
+  document.getElementById('sheet').scrollTop = 0;
+}
+function closeSheet() { document.getElementById('sheetBg').classList.remove('open'); draft = null; }
+
+function renderSheet() {
+  const f = (k, label, type = 'text', extra = '') =>
+    `<label><span>${label}</span><input data-f="${k}" type="${type}" value="${esc(draft[k])}" ${extra}></label>`;
+  let html = `<div class="sheet-head"><button class="link" id="cancel">Cancelar</button>
+    <b>${isNew() ? 'Nova pessoa' : 'Editar'}</b><button class="link bold" id="saveBtn">Guardar</button></div>
+    ${isNew() ? '<button class="pick" id="pickBtn">📇 Escolher dos Contactos</button>' : ''}
+    <div class="form">${f('nome', 'Nome', 'text', 'autocomplete="off"')}${f('telefone', 'Telemóvel', 'tel', 'inputmode="tel"')}</div>
+    <div class="form">${f('empresa', 'Empresa')}${f('local', 'Local')}
+    <label><span>Notas</span><textarea data-f="notas">${esc(draft.notas)}</textarea></label></div>
+    <div class="label">Horários de chamada</div><div class="form">`;
+  draft.horarios.forEach((h, i) => {
+    html += `<div class="slot"><div class="slot-top"><span>Das</span><input type="time" data-hora="${i}" value="${esc(h.hora)}">
+      <span>às</span><input type="time" data-ate="${i}" value="${esc(h.ate || (h.hora ? endOf(h) : ''))}"></div><div class="days">` +
+      DAYS.map(([n, l]) => `<button data-day="${i}:${n}" class="${h.dias.includes(n) ? 'on' : ''}">${l}</button>`).join('') +
+      `</div><div class="slot-actions"><button class="bell ${h.lembrete ? 'on' : ''}" data-bell="${i}">🔔 ${h.lembrete ? 'Lembrete criado' : 'Criar lembrete'}</button>
+      <button class="rm" data-rm="${i}">Remover</button></div></div>`;
+  });
+  html += `<button class="add-slot" id="addSlot">+ Adicionar horário</button></div>`;
+  if (draft.id) html += `<button class="danger" id="del">Apagar pessoa</button>`;
+  document.getElementById('sheet').innerHTML = html;
+}
+
+document.getElementById('sheet').addEventListener('input', e => {
+  const t = e.target;
+  if (t.dataset.f) draft[t.dataset.f] = t.value;
+  if (t.dataset.hora !== undefined) {
+    const h = draft.horarios[+t.dataset.hora];
+    h.hora = t.value;
+    if (t.value && (!h.ate || h.ate <= t.value)) {
+      h.ate = addMin(t.value, 60);
+      const ateInput = document.querySelector(`[data-ate="${t.dataset.hora}"]`);
+      if (ateInput) ateInput.value = h.ate;
+    }
+  }
+  if (t.dataset.ate !== undefined) draft.horarios[+t.dataset.ate].ate = t.value;
+});
+document.getElementById('sheet').addEventListener('click', e => {
+  const t = e.target.closest('button'); if (!t) return;
+  if (t.id === 'cancel') return closeSheet();
+  if (t.id === 'pickBtn') return pickContact();
+  if (t.id === 'saveBtn') return saveDraft();
+  if (t.id === 'addSlot') { draft.horarios.push({ hora: '', ate: '', dias: [1, 2, 3, 4, 5] }); return renderSheet(); }
+  if (t.id === 'del') {
+    if (confirm('Apagar ' + draft.nome + '?')) {
+      state.people = state.people.filter(p => p.id !== draft.id); save(); closeSheet(); render();
+    }
+    return;
+  }
+  if (t.dataset.bell !== undefined) {
+    const h = draft.horarios[+t.dataset.bell];
+    if (!draft.nome.trim() || !draft.telefone.trim()) return alert('Preenche primeiro o nome e o telemóvel.');
+    if (!h.hora || !h.dias.length) return alert('Escolhe o horário e pelo menos um dia.');
+    if (h.ate && h.ate <= h.hora) return alert('A hora final tem de ser depois da hora inicial.');
+    if (!draft.id) draft.id = uid();
+    openIcs([vevent(draft, h)], 'lembrete-' + draft.nome);
+    h.lembrete = true;
+    return renderSheet();
+  }
+  if (t.dataset.rm !== undefined) { draft.horarios.splice(+t.dataset.rm, 1); return renderSheet(); }
+  if (t.dataset.day) {
+    const [i, n] = t.dataset.day.split(':').map(Number);
+    const ds = draft.horarios[i].dias;
+    draft.horarios[i].dias = ds.includes(n) ? ds.filter(x => x !== n) : [...ds, n];
+    return renderSheet();
+  }
+});
+document.getElementById('sheetBg').addEventListener('click', e => { if (e.target.id === 'sheetBg') closeSheet(); });
+
+function saveDraft() {
+  draft.nome = draft.nome.trim(); draft.telefone = draft.telefone.trim();
+  if (!draft.nome) return alert('Falta o nome.');
+  if (!draft.telefone) return alert('Falta o número de telemóvel.');
+  draft.horarios = draft.horarios.filter(h => h.hora && h.dias.length);
+  if (draft.horarios.some(h => h.ate && h.ate <= h.hora)) return alert('Num dos horários, a hora final é antes da inicial.');
+  draft.horarios.forEach(h => { h.ate = endOf(h); });
+  if (state.people.some(p => p.id === draft.id)) state.people = state.people.map(p => p.id === draft.id ? draft : p);
+  else { if (!draft.id) draft.id = uid(); state.people.push(draft); }
+  save(); closeSheet(); render();
+}
+
+/* ---------- Importar dos Contactos ---------- */
+function isNew() { return !draft || !state.people.some(p => p.id === draft.id); }
+function fillDraft(c) {
+  for (const k of ['nome', 'telefone', 'empresa', 'local', 'notas']) if (c[k]) draft[k] = c[k];
+  renderSheet();
+}
+async function pickContact() {
+  if ('contacts' in navigator && navigator.contacts.select) {
+    try {
+      const props = ['name', 'tel'];
+      try { const sup = await navigator.contacts.getProperties(); if (sup.includes('address')) props.push('address'); } catch (e) {}
+      const [c] = await navigator.contacts.select(props, { multiple: false });
+      if (!c) return;
+      const a = (c.address || [])[0];
+      fillDraft({
+        nome: (c.name || [])[0] || '',
+        telefone: (c.tel || [])[0] || '',
+        local: a ? (a.city || (a.addressLine || []).join(', ')) : ''
+      });
+      return;
+    } catch (e) { if (e.name === 'AbortError' || e.name === 'InvalidStateError') return; }
+  }
+  if (!confirm('O iPhone não deixou abrir os Contactos diretamente.\n\nAlternativa: na app Contactos, abre a pessoa → Partilhar contacto → Guardar em Ficheiros. Depois escolhe aqui esse ficheiro.\n\nEscolher o ficheiro agora?')) return;
+  document.getElementById('vcfFile').click();
+}
+function parseVcf(text) {
+  const lines = text.replace(/\r\n/g, '\n').replace(/\n[ \t]/g, '').split('\n');
+  const out = []; let cur = null;
+  const un = v => v.replace(/\\n/gi, '\n').replace(/\\([,;\\])/g, '$1').trim();
+  for (const line of lines) {
+    const i = line.indexOf(':'); if (i < 0) continue;
+    const left = line.slice(0, i), val = line.slice(i + 1);
+    const parts = left.split(';'); const key = parts[0].replace(/^[^.]*\./, '').toUpperCase();
+    const params = parts.slice(1).join(';').toUpperCase();
+    if (key === 'BEGIN' && /VCARD/i.test(val)) { cur = { tels: [] }; continue; }
+    if (key === 'END' && /VCARD/i.test(val)) { if (cur) out.push(cur); cur = null; continue; }
+    if (!cur) continue;
+    if (key === 'FN') cur.fn = un(val);
+    else if (key === 'N') cur.n = val.split(';').map(un);
+    else if (key === 'TEL') cur.tels.push({ v: un(val).replace(/^tel:/i, ''), cell: /CELL|IPHONE|MOBILE/.test(params), pref: /PREF/.test(params) });
+    else if (key === 'ORG') cur.org = val.split(';').map(un).filter(Boolean).join(' · ');
+    else if (key === 'ADR' && !cur.adr) { const a = val.split(';').map(un); cur.adr = a[3] || a[2] || a[5] || ''; }
+    else if (key === 'NOTE') cur.note = un(val);
+  }
+  return out.map(c => {
+    const t = c.tels.find(x => x.cell) || c.tels.find(x => x.pref) || c.tels[0];
+    return {
+      nome: c.fn || (c.n ? [c.n[1], c.n[0]].filter(Boolean).join(' ') : '') || c.org || '',
+      telefone: t ? t.v : '', empresa: c.org || '', local: c.adr || '', notas: c.note || ''
+    };
+  }).filter(c => c.nome || c.telefone);
+}
+document.getElementById('vcfFile').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  let list = [];
+  try { list = parseVcf(await f.text()); } catch (err) {}
+  if (!list.length) return alert('Não encontrei nenhum contacto nesse ficheiro.');
+  if (list.length === 1 || !confirm('O ficheiro tem ' + list.length + ' contactos. Adicionar todos de uma vez?\n(Ficam com horário 09:00–10:00 nos dias úteis; podes mudar depois.)')) {
+    return fillDraft(list[0]);
+  }
+  for (const c of list) state.people.push({ id: uid(), ...c, horarios: [{ hora: '09:00', ate: '10:00', dias: [1, 2, 3, 4, 5] }] });
+  save(); closeSheet(); tab = 'pessoas'; render();
+});
+
+/* ---------- Lembretes (eventos de calendário com alerta) ---------- */
+const BYDAY = { 0: 'SU', 1: 'MO', 2: 'TU', 3: 'WE', 4: 'TH', 5: 'FR', 6: 'SA' };
+const pad = n => String(n).padStart(2, '0');
+function icsEsc(s) { return String(s || '').replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/[,;]/g, m => '\\' + m); }
+function firstDate(dias) {
+  const d = new Date();
+  for (let k = 0; k < 8; k++) {
+    const x = new Date(d.getFullYear(), d.getMonth(), d.getDate() + k);
+    if (dias.includes(x.getDay())) return x;
+  }
+  return d;
+}
+function vevent(p, h) {
+  const d = firstDate(h.dias);
+  const [hh, mm] = h.hora.split(':');
+  const start = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${hh}${mm}00`;
+  const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
+  const desc = [[p.empresa, p.local].filter(Boolean).join(' · '), 'Tel: ' + p.telefone, p.notas].filter(Boolean).join('\n');
+  return ['BEGIN:VEVENT', `UID:${p.id}-${hh}${mm}@chamadas`, `DTSTAMP:${stamp}`, `DTSTART:${start}`, `DURATION:PT${Math.max(5, (() => { const [a, b] = endOf(h).split(':').map(Number); return a * 60 + b - (+hh * 60 + +mm); })())}M`,
+    `RRULE:FREQ=WEEKLY;BYDAY=${h.dias.map(n => BYDAY[n]).join(',')}`,
+    `SUMMARY:${icsEsc('📞 Ligar a ' + p.nome)}`, `DESCRIPTION:${icsEsc(desc)}`, `URL:${telHref(p.telefone)}`,
+    'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${icsEsc('Ligar a ' + p.nome)}`, 'TRIGGER:PT0S', 'END:VALARM',
+    'END:VEVENT'].join('\r\n');
+}
+function openIcs(events, name) {
+  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Chamadas//PT', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', ...events, 'END:VCALENDAR'].join('\r\n');
+  const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
+  const a = document.createElement('a');
+  a.href = url; a.download = name.replace(/[^\w\-]+/g, '-') + '.ics';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+function remindAll() {
+  const ev = [];
+  for (const p of state.people) for (const h of p.horarios || []) {
+    if (h.hora && h.dias.length && !h.lembrete) { ev.push(vevent(p, h)); h.lembrete = true; }
+  }
+  if (!ev.length) return alert('Todos os horários já têm lembrete.');
+  if (!confirm('Criar ' + ev.length + ' lembretes no Calendário?')) { load(); return; }
+  openIcs(ev, 'lembretes-chamadas');
+  save(); render();
+}
+
+/* ---------- Cópia de segurança ---------- */
+async function exportData() {
+  const json = JSON.stringify({ people: state.people }, null, 2);
+  const name = 'chamadas-' + todayKey() + '.json';
+  const file = new File([json], name, { type: 'application/json' });
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); return; }
+  } catch (e) { if (e.name === 'AbortError') return; }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(file); a.download = name; a.click();
+}
+document.getElementById('importFile').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    if (!Array.isArray(data.people)) throw new Error();
+    if (confirm('Substituir as ' + state.people.length + ' pessoas atuais pelas ' + data.people.length + ' da cópia?')) {
+      state.people = data.people; save(); render();
+    }
+  } catch (err) { alert('Ficheiro inválido.'); }
+  e.target.value = '';
+});
+
+/* ---------- Navegação ---------- */
+document.getElementById('tab-hoje').onclick = () => { tab = 'hoje'; query = ''; render(); window.scrollTo(0, 0); };
+document.getElementById('tab-pessoas').onclick = () => { tab = 'pessoas'; query = ''; render(); window.scrollTo(0, 0); };
+
+load(); prune(); save(); render();
+let lastDay = todayKey();
+setInterval(() => {
+  if (draft) return;
+  if (document.activeElement && document.activeElement.id === 'q') return;
+  if (todayKey() !== lastDay) { lastDay = todayKey(); prune(); save(); }
+  render();
+}, 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && !draft) { prune(); render(); } });
+</script>
+</body>
+</html>
